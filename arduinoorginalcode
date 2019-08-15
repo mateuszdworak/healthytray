@@ -1,0 +1,51 @@
+#include <Adafruit_NeoPixel.h>
+#ifdef __AVR__
+#include <avr/power.h>
+#endif
+
+#define PIN_LED   8
+
+#define NUMPIXELS      5
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN_LED, NEO_GRB + NEO_KHZ800);
+
+int minval = 0;
+int maxval = 1024;
+
+void setup() {
+ 
+#if defined (__AVR_ATtiny85__)
+  if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
+#endif
+
+  Serial.begin(9600);
+  pixels.begin();
+  pixels.show();
+
+  pinMode(3,INPUT_PULLUP);
+  pinMode(2,INPUT_PULLUP);
+  
+}
+
+void loop() {
+  
+  if(digitalRead(3)==LOW)
+  {
+    minval=analogRead(A0);
+  }else if(digitalRead(2)==LOW)
+  {
+    maxval=analogRead(A0);
+  }
+  else{
+    int value = analogRead(A0);
+    if(value<minval)value=minval;
+    if(value>maxval)value=maxval;
+    
+    float r = (value-minval)/((maxval-minval)*1.0);
+    Serial.println(r);
+      //Serial.println(r);
+      pixels.fill(pixels.Color(255*(1-r), 255*r, 0));
+      pixels.show();
+  }
+  delay(100);
+
+}
